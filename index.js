@@ -1,6 +1,20 @@
 const express = require("express");
-const app = express();
 const cors = require("cors");
+const mongoose = require("mongoose");
+const app = express();
+
+const passwd = process.argv[2];
+const url = `mongodb+srv://ryansanisit19:${passwd}@fso-notes.s097f27.mongodb.net/Person?retryWrites=true&w=majority`;
+
+mongoose.set("strictQuery", false);
+mongoose.connect(url);
+
+const noteSchema = new mongoose.Schema({
+	content: String,
+	important: Boolean,
+});
+
+const Note = mongoose.model("Note", noteSchema);
 
 const requestLogger = (request, response, next) => {
 	console.log("Method:", request.method);
@@ -19,30 +33,30 @@ app.use(express.json());
 app.use(requestLogger);
 app.use(express.static("dist"));
 
-let notes = [
-	{
-		id: 1,
-		content: "HTML is easy",
-		important: true,
-	},
-	{
-		id: 2,
-		content: "Browser can execute only JavaScript",
-		important: false,
-	},
-	{
-		id: 3,
-		content: "GET and POST are the most important methods of HTTP protocol",
-		important: true,
-	},
-];
+// let notes = [
+// 	{
+// 		id: 1,
+// 		content: "HTML is easy",
+// 		important: true,
+// 	},
+// 	{
+// 		id: 2,
+// 		content: "Browser can execute only JavaScript",
+// 		important: false,
+// 	},
+// 	{
+// 		id: 3,
+// 		content: "GET and POST are the most important methods of HTTP protocol",
+// 		important: true,
+// 	},
+// ];
 
 app.get("/", (req, res) => {
 	res.send("<h1>Hello World!</h1>");
 });
 
 app.get("/api/notes", (req, res) => {
-	res.json(notes);
+	Note.find({}).then((notes) => res.json(notes));
 });
 
 const generateId = () => {
